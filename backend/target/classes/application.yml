@@ -27,7 +27,7 @@ spring:
 
   web:
     resources:
-      static-locations: file:uploads/,classpath:/static/
+      static-locations: file:${user.dir}/uploads/,classpath:/static/
 
 mybatis-flex:
   mapper-locations: classpath*:mapper/**/*.xml
@@ -40,4 +40,4 @@ jwt:
   expiration: 86400000  # 24 hours in ms
 
 upload:
-  dir: uploads/
+  dir: ${user.dir}/uploads/

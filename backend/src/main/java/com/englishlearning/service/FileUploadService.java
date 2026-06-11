@@ -16,8 +16,16 @@ public class FileUploadService {
     @Value("${upload.dir:uploads/}")
     private String uploadDir;
 
+    private Path getAbsolutePath() {
+        Path path = Paths.get(uploadDir);
+        if (!path.isAbsolute()) {
+            path = Paths.get(System.getProperty("user.dir"), uploadDir);
+        }
+        return path;
+    }
+
     public String uploadFile(MultipartFile file, String subDir) throws IOException {
-        Path dirPath = Paths.get(uploadDir, subDir);
+        Path dirPath = getAbsolutePath().resolve(subDir);
         if (!Files.exists(dirPath)) {
             Files.createDirectories(dirPath);
         }
@@ -30,7 +38,7 @@ public class FileUploadService {
         Path filePath = dirPath.resolve(newFilename);
         file.transferTo(filePath.toFile());
 
-        return "/api/uploads/" + subDir + "/" + newFilename;
+        return "/uploads/" + subDir + "/" + newFilename;
     }
 
     public String uploadAudio(MultipartFile file) throws IOException {
