@@ -391,7 +391,7 @@ MIT License
 
 项目维护者 - [波子]
 
-项目链接：[https://github.com/yourusername/english-learning](https://github.com/yourusername/english-learning)
+项目链接：[https://github.com/zeranniu/english-learning](https://github.com/zeranniu/english-learning)
 
 ---
 
