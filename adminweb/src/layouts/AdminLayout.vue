@@ -52,10 +52,15 @@
         <div style="display: flex; align-items: center; gap: 12px">
           <span>{{ authStore.adminInfo?.nickname || '管理员' }}</span>
           <el-dropdown @command="handleCommand">
-            <el-icon style="cursor: pointer"><ArrowDown /></el-icon>
+            <el-icon style="cursor: pointer; font-size: 16px"><ArrowDown /></el-icon>
             <template #dropdown>
               <el-dropdown-menu>
-                <el-dropdown-item command="logout">退出登录</el-dropdown-item>
+                <el-dropdown-item command="profile">
+                  <el-icon><User /></el-icon> 个人中心
+                </el-dropdown-item>
+                <el-dropdown-item divided command="logout">
+                  <el-icon><SwitchButton /></el-icon> 退出登录
+                </el-dropdown-item>
               </el-dropdown-menu>
             </template>
           </el-dropdown>
@@ -72,6 +77,10 @@
 import { ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
+import {
+  ArrowDown, User, SwitchButton,
+  Fold, Expand, DataBoard, Setting, Collection, TrendCharts, Upload,
+} from '@element-plus/icons-vue'
 
 const route = useRoute()
 const router = useRouter()
@@ -79,7 +88,9 @@ const authStore = useAuthStore()
 const isCollapse = ref(false)
 
 function handleCommand(cmd: string) {
-  if (cmd === 'logout') {
+  if (cmd === 'profile') {
+    router.push('/system/profile')
+  } else if (cmd === 'logout') {
     authStore.logout()
     router.push('/login')
   }

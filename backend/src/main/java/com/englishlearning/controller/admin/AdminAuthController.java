@@ -88,6 +88,19 @@ public class AdminAuthController {
         return R.ok(data);
     }
 
+    @PutMapping("/profile")
+    public R<?> updateProfile(@RequestBody Map<String, String> body) {
+        Long adminId = AdminContext.getCurrentAdminId();
+        if (adminId == null) return R.fail("未登录");
+        SysAdmin admin = adminMapper.selectOneById(adminId);
+        if (body.containsKey("nickname")) admin.setNickname(body.get("nickname"));
+        if (body.containsKey("email")) admin.setEmail(body.get("email"));
+        if (body.containsKey("phone")) admin.setPhone(body.get("phone"));
+        if (body.containsKey("avatar")) admin.setAvatar(body.get("avatar"));
+        adminMapper.update(admin);
+        return R.ok("保存成功");
+    }
+
     @PutMapping("/password")
     public R<?> changePassword(@RequestBody ChangePasswordRequest req) {
         Long adminId = AdminContext.getCurrentAdminId();
