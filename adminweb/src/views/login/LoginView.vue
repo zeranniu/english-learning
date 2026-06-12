@@ -4,10 +4,18 @@
       <h2 style="text-align: center; margin-bottom: 30px; color: #333">英语学习管理端</h2>
       <el-form :model="form" :rules="rules" ref="formRef" size="large">
         <el-form-item prop="username">
-          <el-input v-model="form.username" placeholder="请输入用户名" prefix-icon="User" />
+          <el-input v-model="form.username" placeholder="请输入用户名">
+            <template #prefix>
+              <el-icon><User /></el-icon>
+            </template>
+          </el-input>
         </el-form-item>
         <el-form-item prop="password">
-          <el-input v-model="form.password" type="password" placeholder="请输入密码" prefix-icon="Lock" show-password @keyup.enter="handleLogin" />
+          <el-input v-model="form.password" type="password" placeholder="请输入密码" show-password @keyup.enter="handleLogin">
+            <template #prefix>
+              <el-icon><Lock /></el-icon>
+            </template>
+          </el-input>
         </el-form-item>
         <el-form-item>
           <el-button type="primary" style="width: 100%" :loading="loading" @click="handleLogin">登 录</el-button>
@@ -22,6 +30,7 @@ import { ref, reactive } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
 import { ElMessage, type FormInstance, type FormRules } from 'element-plus'
+import { User, Lock } from '@element-plus/icons-vue'
 
 const router = useRouter()
 const authStore = useAuthStore()

@@ -3,25 +3,38 @@ package com.englishlearning.controller.admin;
 import com.englishlearning.common.R;
 import com.englishlearning.config.AdminContext;
 import com.englishlearning.entity.SysAdmin;
+import com.englishlearning.entity.SysAdminRole;
 import com.englishlearning.mapper.SysAdminMapper;
+import com.englishlearning.mapper.SysAdminRoleMapper;
+import com.englishlearning.mapper.SysRoleMapper;
 import com.mybatisflex.core.paginate.Page;
 import com.mybatisflex.core.query.QueryWrapper;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
 import java.util.Map;
 
 import static com.englishlearning.entity.table.SysAdminTableDef.SYS_ADMIN;
+import static com.englishlearning.entity.table.SysAdminRoleTableDef.SYS_ADMIN_ROLE;
 
 @RestController
 @RequestMapping("/admin/users")
 public class AdminUserController {
 
     private final SysAdminMapper adminMapper;
+    private final SysAdminRoleMapper adminRoleMapper;
+    private final SysRoleMapper roleMapper;
     private final PasswordEncoder passwordEncoder;
 
-    public AdminUserController(SysAdminMapper adminMapper, PasswordEncoder passwordEncoder) {
+    public AdminUserController(
+            SysAdminMapper adminMapper,
+            SysAdminRoleMapper adminRoleMapper,
+            SysRoleMapper roleMapper,
+            PasswordEncoder passwordEncoder) {
         this.adminMapper = adminMapper;
+        this.adminRoleMapper = adminRoleMapper;
+        this.roleMapper = roleMapper;
         this.passwordEncoder = passwordEncoder;
     }
 
@@ -46,8 +59,42 @@ public class AdminUserController {
 
         Page<SysAdmin> page = adminMapper.paginate(Page.of(pageNum, pageSize), qw);
 
+        // 为每个用户添加角色信息
+        List<Map<String, Object>> userList = new java.util.ArrayList<>();
+        for (SysAdmin admin : page.getRecords()) {
+            Map<String, Object> userInfo = new java.util.HashMap<>();
+            userInfo.put("id", admin.getId());
+            userInfo.put("username", admin.getUsername());
+            userInfo.put("nickname", admin.getNickname());
+            userInfo.put("email", admin.getEmail());
+            userInfo.put("phone", admin.getPhone());
+            userInfo.put("status", admin.getStatus());
+            userInfo.put("createdAt", admin.getCreatedAt());
+
+            // 获取用户角色
+            List<SysAdminRole> adminRoles = adminRoleMapper.selectListByQuery(
+                    QueryWrapper.create().where(SYS_ADMIN_ROLE.ADMIN_ID.eq(admin.getId()))
+            );
+            List<Long> roleIds = adminRoles.stream().map(SysAdminRole::getRoleId).toList();
+            userInfo.put("roleIds", roleIds);
+
+            // 获取角色详情
+            if (!roleIds.isEmpty()) {
+                List<com.englishlearning.entity.SysRole> roles = roleMapper.selectListByIds(roleIds);
+                userInfo.put("roles", roles.stream().map(r -> Map.of(
+                        "id", r.getId(),
+                        "roleName", r.getRoleName(),
+                        "roleCode", r.getRoleCode()
+                )).toList());
+            } else {
+                userInfo.put("roles", java.util.Collections.emptyList());
+            }
+
+            userList.add(userInfo);
+        }
+
         return R.ok(Map.of(
-                "list", page.getRecords(),
+                "list", userList,
                 "total", page.getTotalRow(),
                 "pageNum", page.getPageNumber(),
                 "pageSize", page.getPageSize()
@@ -55,12 +102,12 @@ public class AdminUserController {
     }
 
     @PostMapping
-    public R<?> create(@RequestBody Map<String, String> body) {
-        String username = body.get("username");
-        String password = body.get("password");
-        String nickname = body.get("nickname");
-        String email = body.get("email");
-        String phone = body.get("phone");
+    public R<?> create(@RequestBody Map<String, Object> body) {
+        String username = (String) body.get("username");
+        String password = (String) body.get("password");
+        String nickname = (String) body.get("nickname");
+        String email = (String) body.get("email");
+        String phone = (String) body.get("phone");
 
         if (username == null || username.isEmpty()) {
             return R.fail("用户名不能为空");
@@ -91,6 +138,16 @@ public class AdminUserController {
 
         adminMapper.insert(admin);
 
+        // 保存角色关联
+        @SuppressWarnings("unchecked")
+        List<Object> rawRoleIds = (List<Object>) body.get("roleIds");
+        if (rawRoleIds != null && !rawRoleIds.isEmpty()) {
+            List<Long> roleIds = rawRoleIds.stream()
+                    .map(obj -> obj instanceof Long ? (Long) obj : Long.valueOf(obj.toString()))
+                    .toList();
+            saveAdminRoles(admin.getId(), roleIds);
+        }
+
         return R.ok("创建成功");
     }
 
@@ -111,7 +168,7 @@ public class AdminUserController {
             admin.setPhone((String) body.get("phone"));
         }
         if (body.containsKey("status")) {
-            admin.setStatus((Integer) body.get("status"));
+            admin.setStatus(body.get("status") instanceof Integer ? (Integer) body.get("status") : Integer.parseInt(body.get("status").toString()));
         }
         if (body.containsKey("password") && body.get("password") != null) {
             String newPassword = (String) body.get("password");
@@ -121,6 +178,23 @@ public class AdminUserController {
         }
 
         adminMapper.update(admin);
+
+        // 更新角色关联
+        @SuppressWarnings("unchecked")
+        List<Object> rawRoleIds = (List<Object>) body.get("roleIds");
+        if (rawRoleIds != null) {
+            // 删除旧的角色关联
+            adminRoleMapper.deleteByQuery(
+                    QueryWrapper.create().where(SYS_ADMIN_ROLE.ADMIN_ID.eq(id))
+            );
+            // 转换并保存新的角色关联
+            List<Long> roleIds = rawRoleIds.stream()
+                    .map(obj -> obj instanceof Long ? (Long) obj : Long.valueOf(obj.toString()))
+                    .toList();
+            if (!roleIds.isEmpty()) {
+                saveAdminRoles(id, roleIds);
+            }
+        }
 
         return R.ok("更新成功");
     }
@@ -136,6 +210,49 @@ public class AdminUserController {
         admin.setIsDeleted(true);
         adminMapper.update(admin);
 
+        // 删除角色关联
+        adminRoleMapper.deleteByQuery(
+                QueryWrapper.create().where(SYS_ADMIN_ROLE.ADMIN_ID.eq(id))
+        );
+
         return R.ok("删除成功");
+    }
+
+    @GetMapping("/{id}/roles")
+    public R<?> getUserRoles(@PathVariable Long id) {
+        List<SysAdminRole> adminRoles = adminRoleMapper.selectListByQuery(
+                QueryWrapper.create().where(SYS_ADMIN_ROLE.ADMIN_ID.eq(id))
+        );
+        List<Long> roleIds = adminRoles.stream().map(SysAdminRole::getRoleId).toList();
+        return R.ok(roleIds);
+    }
+
+    @PutMapping("/{id}/roles")
+    public R<?> assignRoles(@PathVariable Long id, @RequestBody List<Long> roleIds) {
+        SysAdmin admin = adminMapper.selectOneById(id);
+        if (admin == null) {
+            return R.fail("用户不存在");
+        }
+
+        // 删除旧的角色关联
+        adminRoleMapper.deleteByQuery(
+                QueryWrapper.create().where(SYS_ADMIN_ROLE.ADMIN_ID.eq(id))
+        );
+
+        // 保存新的角色关联
+        if (roleIds != null && !roleIds.isEmpty()) {
+            saveAdminRoles(id, roleIds);
+        }
+
+        return R.ok("分配成功");
+    }
+
+    private void saveAdminRoles(Long adminId, List<Long> roleIds) {
+        for (Long roleId : roleIds) {
+            SysAdminRole adminRole = new SysAdminRole();
+            adminRole.setAdminId(adminId);
+            adminRole.setRoleId(roleId);
+            adminRoleMapper.insert(adminRole);
+        }
     }
 }

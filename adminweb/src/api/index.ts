@@ -6,6 +6,14 @@ export const getUserList = (params: any) => request.get('/admin/students/list', 
 export const getUserDetail = (id: number) => request.get(`/admin/students/${id}`)
 export const updateUser = (id: number, data: any) => request.put(`/admin/students/${id}`, data)
 export const deleteUser = (id: number) => request.delete(`/admin/students/${id}`)
+
+// 管理端用户 API
+export const getAdminUserList = (params: any) => request.get('/admin/users/list', { params })
+export const createAdminUser = (data: any) => request.post('/admin/users', data)
+export const updateAdminUser = (id: number, data: any) => request.put(`/admin/users/${id}`, data)
+export const deleteAdminUser = (id: number) => request.delete(`/admin/users/${id}`)
+export const getAdminUserRoles = (id: number) => request.get(`/admin/users/${id}/roles`)
+export const assignAdminUserRoles = (id: number, roleIds: number[]) => request.put(`/admin/users/${id}/roles`, roleIds)
 export const getRoleList = () => request.get('/admin/roles/list')
 export const saveRole = (data: any) => request.post('/admin/roles', data)
 export const deleteRole = (id: number) => request.delete(`/admin/roles/${id}`)

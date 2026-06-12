@@ -1,24 +1,38 @@
 package com.englishlearning.controller.admin;
 
 import com.englishlearning.common.R;
+import com.englishlearning.config.AdminContext;
+import com.englishlearning.entity.SysAdminRole;
 import com.englishlearning.entity.SysMenu;
+import com.englishlearning.entity.SysRoleMenu;
+import com.englishlearning.mapper.SysAdminRoleMapper;
 import com.englishlearning.mapper.SysMenuMapper;
+import com.englishlearning.mapper.SysRoleMenuMapper;
 import com.mybatisflex.core.query.QueryWrapper;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.*;
 import java.util.stream.Collectors;
 
+import static com.englishlearning.entity.table.SysAdminRoleTableDef.SYS_ADMIN_ROLE;
 import static com.englishlearning.entity.table.SysMenuTableDef.SYS_MENU;
+import static com.englishlearning.entity.table.SysRoleMenuTableDef.SYS_ROLE_MENU;
 
 @RestController
 @RequestMapping("/admin/menus")
 public class MenuController {
 
     private final SysMenuMapper menuMapper;
+    private final SysRoleMenuMapper roleMenuMapper;
+    private final SysAdminRoleMapper adminRoleMapper;
 
-    public MenuController(SysMenuMapper menuMapper) {
+    public MenuController(
+            SysMenuMapper menuMapper,
+            SysRoleMenuMapper roleMenuMapper,
+            SysAdminRoleMapper adminRoleMapper) {
         this.menuMapper = menuMapper;
+        this.roleMenuMapper = roleMenuMapper;
+        this.adminRoleMapper = adminRoleMapper;
     }
 
     @GetMapping("/tree")
@@ -33,15 +47,45 @@ public class MenuController {
 
     @GetMapping("/user-menus")
     public R<?> getUserMenus() {
-        // 简化版：返回所有菜单（后续可根据角色权限过滤）
-        List<SysMenu> all = menuMapper.selectListByQuery(
-                QueryWrapper.create()
-                        .where(SYS_MENU.IS_DELETED.eq(false))
-                        .where(SYS_MENU.VISIBLE.eq(true))
-                        .where(SYS_MENU.TYPE.eq(1)) // 只返回菜单类型
-                        .orderBy(SYS_MENU.SORT_ORDER, true)
+        Long adminId = AdminContext.getCurrentAdminId();
+        if (adminId == null) {
+            return R.fail("未登录");
+        }
+
+        // 获取当前用户的角色ID列表
+        List<SysAdminRole> adminRoles = adminRoleMapper.selectListByQuery(
+                QueryWrapper.create().where(SYS_ADMIN_ROLE.ADMIN_ID.eq(adminId))
         );
-        return R.ok(buildTree(all, 0L));
+        List<Long> roleIds = adminRoles.stream().map(SysAdminRole::getRoleId).collect(Collectors.toList());
+
+        List<SysMenu> allMenus;
+
+        if (roleIds.isEmpty()) {
+            // 没有分配角色，返回空菜单
+            allMenus = Collections.emptyList();
+        } else {
+            // 获取角色关联的菜单ID
+            List<SysRoleMenu> roleMenus = roleMenuMapper.selectListByQuery(
+                    QueryWrapper.create().where(SYS_ROLE_MENU.ROLE_ID.in(roleIds))
+            );
+            Set<Long> menuIds = roleMenus.stream().map(SysRoleMenu::getMenuId).collect(Collectors.toSet());
+
+            if (menuIds.isEmpty()) {
+                allMenus = Collections.emptyList();
+            } else {
+                // 获取菜单详情
+                allMenus = menuMapper.selectListByQuery(
+                        QueryWrapper.create()
+                                .where(SYS_MENU.ID.in(menuIds))
+                                .where(SYS_MENU.IS_DELETED.eq(false))
+                                .where(SYS_MENU.VISIBLE.eq(true))
+                                .where(SYS_MENU.TYPE.eq(1))
+                                .orderBy(SYS_MENU.SORT_ORDER, true)
+                );
+            }
+        }
+
+        return R.ok(buildTree(allMenus, 0L));
     }
 
     @PostMapping
