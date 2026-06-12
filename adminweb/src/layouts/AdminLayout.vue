@@ -25,6 +25,7 @@
         </el-sub-menu>
         <el-sub-menu index="system">
           <template #title><el-icon><Setting /></el-icon><span>系统管理</span></template>
+          <el-menu-item index="/system/user">用户管理</el-menu-item>
           <el-menu-item index="/system/role">角色管理</el-menu-item>
           <el-menu-item index="/system/menu">菜单管理</el-menu-item>
           <el-menu-item index="/system/log">操作日志</el-menu-item>

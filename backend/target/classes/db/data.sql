@@ -93,9 +93,9 @@ ON CONFLICT DO NOTHING;
 
 -- ==================== 管理端初始数据 ====================
 
--- 默认超级管理员 (密码: admin123, BCrypt加密)
+-- 默认超级管理员 (密码: 123456, BCrypt加密)
 INSERT INTO sys_admin (username, password, nickname, email, status)
-VALUES ('admin', '$2a$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LJZdL17lhWy', '超级管理员', 'admin@english-learning.com', 1)
+VALUES ('admin', '$2a$10$N.zmdr9k7uOCQb376NoUnuTJ8iAt6Z5EHsM8lE9lBOsl7iKTVKIUi', '超级管理员', 'admin@english-learning.com', 1)
 ON CONFLICT (username) DO NOTHING;
 
 -- 默认角色

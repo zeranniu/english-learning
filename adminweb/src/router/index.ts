@@ -16,6 +16,7 @@ const routes: RouteRecordRaw[] = [
       { path: 'system/menu', component: () => import('@/views/system/MenuListView.vue'), meta: { title: '菜单管理' } },
       { path: 'system/log', component: () => import('@/views/system/LogListView.vue'), meta: { title: '操作日志' } },
       { path: 'system/profile', component: () => import('@/views/system/ProfileView.vue'), meta: { title: '个人中心' } },
+      { path: 'system/user', component: () => import('@/views/system/AdminUserListView.vue'), meta: { title: '用户管理' } },
       { path: 'content/vocab', component: () => import('@/views/content/VocabListView.vue'), meta: { title: '单词库' } },
       { path: 'content/vocab/edit/:id?', component: () => import('@/views/content/VocabEditView.vue'), meta: { title: '单词编辑' } },
       { path: 'content/listening', component: () => import('@/views/content/ListeningListView.vue'), meta: { title: '听力题库' } },

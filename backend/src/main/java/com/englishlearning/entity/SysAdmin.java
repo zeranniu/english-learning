@@ -18,6 +18,7 @@ public class SysAdmin {
     private String email;
     private String phone;
     private Integer status;
+    private Boolean isDeleted;
     private LocalDateTime lastLoginAt;
     private String lastLoginIp;
     private LocalDateTime createdAt;

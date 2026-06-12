@@ -26,6 +26,8 @@ public class SysAdminTableDef extends TableDef {
 
     public final QueryColumn CREATED_AT = new QueryColumn(this, "created_at");
 
+    public final QueryColumn IS_DELETED = new QueryColumn(this, "is_deleted");
+
     public final QueryColumn UPDATED_AT = new QueryColumn(this, "updated_at");
 
     public final QueryColumn LAST_LOGIN_AT = new QueryColumn(this, "last_login_at");
@@ -40,7 +42,7 @@ public class SysAdminTableDef extends TableDef {
     /**
      * 默认字段，不包含逻辑删除或者 large 等字段。
      */
-    public final QueryColumn[] DEFAULT_COLUMNS = new QueryColumn[]{ID, EMAIL, PHONE, AVATAR, STATUS, NICKNAME, PASSWORD, USERNAME, CREATED_AT, UPDATED_AT, LAST_LOGIN_AT, LAST_LOGIN_IP};
+    public final QueryColumn[] DEFAULT_COLUMNS = new QueryColumn[]{ID, EMAIL, PHONE, AVATAR, STATUS, NICKNAME, PASSWORD, USERNAME, CREATED_AT, IS_DELETED, UPDATED_AT, LAST_LOGIN_AT, LAST_LOGIN_IP};
 
     public SysAdminTableDef() {
         super("", "sys_admin");
