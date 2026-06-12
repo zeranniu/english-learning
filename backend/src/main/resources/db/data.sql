@@ -115,9 +115,10 @@ INSERT INTO sys_menu (parent_id, name, path, component, icon, sort_order, visibl
 
 (2, '学生列表', '/user/list', 'user/UserListView', 'UserFilled', 1, TRUE, 'user:list', 1),
 
-(3, '角色管理', '/system/role', 'system/RoleListView', 'User', 1, TRUE, 'system:role', 1),
-(3, '菜单管理', '/system/menu', 'system/MenuListView', 'Menu', 2, TRUE, 'system:menu', 1),
-(3, '操作日志', '/system/log', 'system/LogListView', 'Document', 3, TRUE, 'system:log', 1),
+(3, '用户管理', '/system/user', 'system/AdminUserListView', 'User', 1, TRUE, 'system:user', 1),
+(3, '角色管理', '/system/role', 'system/RoleListView', 'User', 2, TRUE, 'system:role', 1),
+(3, '菜单管理', '/system/menu', 'system/MenuListView', 'Menu', 3, TRUE, 'system:menu', 1),
+(3, '操作日志', '/system/log', 'system/LogListView', 'Document', 4, TRUE, 'system:log', 1),
 
 (4, '单词库', '/content/vocab', 'content/VocabListView', 'Notebook', 1, TRUE, 'content:vocab', 1),
 (4, '听力题库', '/content/listening', 'content/ListeningListView', 'Headset', 2, TRUE, 'content:listening', 1),
