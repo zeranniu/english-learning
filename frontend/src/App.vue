@@ -1,17 +1,19 @@
 <script setup lang="ts">
 import { onHide, onLaunch, onShow } from '@dcloudio/uni-app'
-import { getCurrentInstance, onMounted, onUnmounted } from 'vue'
+import { onMounted, onUnmounted } from 'vue'
 import { navigateToInterceptor } from '@/router/interceptor'
 import { tabbarStore } from '@/tabbar/store'
-import { permission } from '@/router/permission'
-
-const { proxy } = (getCurrentInstance() || {}) as any
-const router = proxy?.$router
-
-router && permission.install(router)
+import { useTokenStore } from '@/store/token'
 
 onLaunch((options) => {
   console.log('App.vue onLaunch', options)
+  // 小程序启动时检查登录状态，未登录则跳转登录页
+  const tokenStore = useTokenStore()
+  const hasLogin = tokenStore.updateNowTime().hasLogin
+  if (!hasLogin) {
+    console.log('未登录，跳转到登录页')
+    uni.reLaunch({ url: '/pages/login/index' })
+  }
 })
 onShow((options) => {
   console.log('App.vue onShow', options)

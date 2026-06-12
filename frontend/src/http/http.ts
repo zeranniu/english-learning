@@ -24,8 +24,18 @@ export function http<T>(options: CustomRequestOptions) {
         const responseData = res.data as IResponse<T>
         const { code } = responseData
 
-        // 检查是否是401错误（包括HTTP状态码401或业务码401）
+        // 检查是否是401/403错误（包括HTTP状态码或业务码）
+        // 401: token过期, 403: 未授权/无权限（未登录时后端返回403）
         const isTokenExpired = res.statusCode === 401 || code === 401
+        const isForbidden = res.statusCode === 403 || code === 403
+
+        if (isForbidden) {
+          // 403表示未授权，清除用户信息并跳转登录页
+          const tokenStore = useTokenStore()
+          tokenStore.logout()
+          toLoginPage({ mode: 'reLaunch' })
+          return reject(res)
+        }
 
         if (isTokenExpired) {
           const tokenStore = useTokenStore()

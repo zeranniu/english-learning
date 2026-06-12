@@ -1,4 +1,6 @@
 <script lang="ts" setup>
+import { useTokenStore } from '@/store/token'
+
 defineOptions({ name: 'Profile' })
 definePage({
   style: {
@@ -27,6 +29,22 @@ function handleClick(item: typeof menuItems[0]) {
   if (item.target) {
     uni.navigateTo({ url: item.target })
   }
+}
+
+async function handleLogout() {
+  uni.showModal({
+    title: '提示',
+    content: '确定要退出登录吗？',
+    success: async (res) => {
+      if (res.confirm) {
+        const tokenStore = useTokenStore()
+        await tokenStore.logout()
+        uni.showToast({ title: '已退出登录', icon: 'success' })
+        // 跳转到登录页
+        uni.reLaunch({ url: '/pages/login/index' })
+      }
+    },
+  })
 }
 </script>
 
@@ -78,6 +96,18 @@ function handleClick(item: typeof menuItems[0]) {
           </view>
           <wd-icon v-else-if="item.target" name="arrow-right" size="16px" color="#999" />
         </view>
+      </view>
+    </view>
+
+    <!-- Logout Button -->
+    <view class="mx-4 mt-6">
+      <view
+        class="bg-white rounded-16px border py-4 flex items-center justify-center active:opacity-70"
+        style="border-color: #E5E7EB; box-shadow: 0 4px 16px rgba(0,0,0,0.05)"
+        @click="handleLogout"
+      >
+        <wd-icon name="logout" size="20px" color="#EF4444" />
+        <text class="text-14px font-bold" style="color: #EF4444; margin-left: 8px">退出登录</text>
       </view>
     </view>
 

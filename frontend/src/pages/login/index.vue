@@ -13,9 +13,13 @@ definePage({
 const username = ref('xiaoming')
 const password = ref('123456')
 const loading = ref(false)
+const isLoggingIn = ref(false)
 
 // 页面显示时检查是否已登录
 onShow(() => {
+  // 如果正在登录中，不重复跳转
+  if (isLoggingIn.value) return
+  
   const tokenStore = useTokenStore()
   if (tokenStore.updateNowTime().hasValidLogin) {
     // 已登录，直接跳转首页
@@ -34,6 +38,7 @@ async function handleLogin() {
   }
 
   loading.value = true
+  isLoggingIn.value = true
   try {
     const tokenStore = useTokenStore()
     await tokenStore.login({ username: username.value, password: password.value })
@@ -41,6 +46,7 @@ async function handleLogin() {
     uni.switchTab({ url: '/pages/index/index' })
   } catch (e) {
     console.error('Login failed:', e)
+    isLoggingIn.value = false
   } finally {
     loading.value = false
   }
