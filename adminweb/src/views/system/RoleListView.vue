@@ -33,7 +33,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, nextTick } from 'vue'
 import { getRoleList, saveRole, deleteRole, getMenuTree, getRoleMenus, assignMenus } from '@/api'
 import { ElMessage } from 'element-plus'
 
@@ -66,12 +66,27 @@ async function handleDelete(id: number) { await deleteRole(id); ElMessage.succes
 
 async function showMenuDialog(role: any) {
   currentRoleId.value = role.id
-  await loadMenus()
   menuDialogVisible.value = true
-  setTimeout(async () => {
-    const ids: number[] = await getRoleMenus(role.id)
-    menuTreeRef.value?.setCheckedKeys(ids)
-  }, 100)
+  
+  await nextTick()
+  
+  // 先清空之前的选中状态
+  menuTreeRef.value?.setCheckedKeys([], false)
+  
+  try {
+    const menus: any[] = await getRoleMenus(role.id)
+    const ids = menus.map(m => m.id)
+    console.log('角色菜单IDs:', ids)
+    
+    await nextTick()
+    
+    // 使用 setCheckedKeys 设置选中
+    if (menuTreeRef.value && ids && ids.length > 0) {
+      menuTreeRef.value.setCheckedKeys(ids, false)
+    }
+  } catch (e) {
+    console.error('加载角色菜单失败', e)
+  }
 }
 
 async function handleAssignMenus() {

@@ -15,33 +15,21 @@
         style="border-right: none"
         class="admin-sidebar-menu"
       >
-        <el-menu-item index="/dashboard">
-          <el-icon><DataBoard /></el-icon>
-          <template #title>数据看板</template>
-        </el-menu-item>
-        <el-sub-menu index="user">
-          <template #title><el-icon><User /></el-icon><span>用户管理</span></template>
-          <el-menu-item index="/user/list">学生列表</el-menu-item>
-        </el-sub-menu>
-        <el-sub-menu index="system">
-          <template #title><el-icon><Setting /></el-icon><span>系统管理</span></template>
-          <el-menu-item index="/system/user">用户管理</el-menu-item>
-          <el-menu-item index="/system/role">角色管理</el-menu-item>
-          <el-menu-item index="/system/menu">菜单管理</el-menu-item>
-          <el-menu-item index="/system/log">操作日志</el-menu-item>
-        </el-sub-menu>
-        <el-sub-menu index="content">
-          <template #title><el-icon><Collection /></el-icon><span>题库管理</span></template>
-          <el-menu-item index="/content/vocab">单词库</el-menu-item>
-          <el-menu-item index="/content/listening">听力题库</el-menu-item>
-          <el-menu-item index="/content/reading">阅读题库</el-menu-item>
-          <el-menu-item index="/content/grammar">语法题库</el-menu-item>
-        </el-sub-menu>
-        <el-sub-menu index="stats">
-          <template #title><el-icon><TrendCharts /></el-icon><span>数据统计</span></template>
-          <el-menu-item index="/stats/mistake">错题统计</el-menu-item>
-          <el-menu-item index="/stats/data">学习统计</el-menu-item>
-        </el-sub-menu>
+        <template v-for="menu in menus" :key="menu.id">
+          <el-menu-item v-if="!menu.children" :index="menu.path">
+            <el-icon><component :is="getIcon(menu.icon)" /></el-icon>
+            <template #title>{{ menu.name }}</template>
+          </el-menu-item>
+          <el-sub-menu v-else :index="menu.path">
+            <template #title>
+              <el-icon><component :is="getIcon(menu.icon)" /></el-icon>
+              <span>{{ menu.name }}</span>
+            </template>
+            <el-menu-item v-for="child in menu.children" :key="child.id" :index="child.path">
+              {{ child.name }}
+            </el-menu-item>
+          </el-sub-menu>
+        </template>
       </el-menu>
     </el-aside>
     <el-container>
@@ -75,18 +63,36 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
+import { getUserMenus } from '@/api'
 import {
-  ArrowDown, User, SwitchButton,
-  Fold, Expand, DataBoard, Setting, Collection, TrendCharts, Upload,
+  ArrowDown, User, SwitchButton, Fold, Expand,
+  DataBoard, Setting, Collection, TrendCharts, Upload,
 } from '@element-plus/icons-vue'
 
 const route = useRoute()
 const router = useRouter()
 const authStore = useAuthStore()
 const isCollapse = ref(false)
+const menus = ref<any[]>([])
+
+const iconMap: Record<string, any> = {
+  DataBoard, User, Setting, Collection, TrendCharts,
+}
+
+function getIcon(iconName: string) {
+  return iconMap[iconName] || DataBoard
+}
+
+onMounted(async () => {
+  try {
+    menus.value = await getUserMenus()
+  } catch {
+    console.error('加载菜单失败')
+  }
+})
 
 function handleCommand(cmd: string) {
   if (cmd === 'profile') {
@@ -105,16 +111,11 @@ function handleCommand(cmd: string) {
   --admin-menu-level-indent: 16px;
 }
 
-/* 一级菜单与一级子菜单标题保持一致的容器缩进 */
 .admin-sidebar-menu > .el-menu-item,
 .admin-sidebar-menu > .el-sub-menu > .el-sub-menu__title {
   padding-left: var(--admin-menu-base-padding) !important;
 }
 
-/*
-  一级菜单带图标，文字起点 = 容器缩进 + 图标宽度；
-  二级菜单不带图标，需要先补齐图标宽度，再叠加层级缩进，避免层级视觉反转。
-*/
 .admin-sidebar-menu > .el-sub-menu .el-menu--inline > .el-menu-item {
   padding-left: calc(var(--admin-menu-base-padding) + var(--admin-menu-icon-width) + var(--admin-menu-level-indent)) !important;
   padding-right: 20px !important;

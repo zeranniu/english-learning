@@ -55,22 +55,4 @@ public class AdminSystemController {
                 "角色管理", "分配菜单", "PUT /admin/roles/" + id + "/menus", menuIds.toString(), "success", "");
         return R.ok("分配成功");
     }
-
-    // ---- Menus ----
-    @GetMapping("/menus/tree")
-    public R<?> menuTree() {
-        return R.ok(menuService.getTree());
-    }
-
-    @PostMapping("/menus")
-    public R<?> saveMenu(@RequestBody SysMenu menu) {
-        menuService.save(menu);
-        return R.ok("保存成功");
-    }
-
-    @DeleteMapping("/menus/{id}")
-    public R<?> deleteMenu(@PathVariable Long id) {
-        menuService.delete(id);
-        return R.ok("删除成功");
-    }
 }
