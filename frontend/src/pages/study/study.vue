@@ -56,7 +56,7 @@ function navigateTo(url: string) {
 </script>
 
 <template>
-  <view class="min-h-100vh bg-appbg">
+  <view class="min-h-80vh bg-appbg">
     <!-- Header -->
     <view class="px-6 pt-12 pb-6">
       <text class="text-20px font-bold text-textMain block">学习中心</text>

@@ -58,7 +58,7 @@ function goToRegister() {
 </script>
 
 <template>
-  <view class="login-page min-h-100vh bg-appbg flex flex-col items-center justify-center">
+  <view class="login-page min-h-80vh bg-appbg flex flex-col items-center justify-center">
     <!-- Logo Area -->
     <view class="mb-10 flex flex-col items-center">
       <view class="w-80px h-80px rounded-20px flex items-center justify-center mb-4" style="background: #4A90E2; box-shadow: 0 4px 16px rgba(74,144,226,0.3)">

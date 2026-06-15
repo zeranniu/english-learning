@@ -37,7 +37,7 @@ onShow(() => { loadGrowth() })
 </script>
 
 <template>
-  <view class="min-h-100vh bg-appbg">
+  <view class="min-h-80vh bg-appbg">
     <!-- Header -->
     <view class="px-6 pt-12 pb-4">
       <text class="text-20px font-bold text-textMain block text-center">成长中心</text>

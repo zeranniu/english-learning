@@ -84,7 +84,7 @@ async function handleLogout() {
 </script>
 
 <template>
-  <view class="min-h-100vh bg-appbg">
+  <view class="min-h-80vh bg-appbg">
     <!-- Profile Header -->
     <view class="px-6 pt-12 pb-6 flex flex-col items-center">
       <view class="w-80px h-80px rounded-full flex items-center justify-center overflow-hidden mb-3 border-2 border-white" style="background: #EBF3FD; box-shadow: 0 2px 8px rgba(0,0,0,0.1)">

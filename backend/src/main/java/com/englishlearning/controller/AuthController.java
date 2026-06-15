@@ -65,6 +65,9 @@ public class AuthController {
         user.setTotalScore(0);
         user.setStudyDays(0);
         user.setStreakDays(0);
+        user.setIsDeleted(false);
+        user.setCreatedAt(java.time.LocalDateTime.now());
+        user.setUpdatedAt(java.time.LocalDateTime.now());
         userMapper.insert(user);
         String token = jwtUtil.generateToken(user.getId(), user.getUsername());
         Map<String, Object> data = new HashMap<>();

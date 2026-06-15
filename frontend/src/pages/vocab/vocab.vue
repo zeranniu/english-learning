@@ -62,7 +62,7 @@ onShow(() => { loadWords() })
 </script>
 
 <template>
-  <view class="min-h-100vh bg-appbg flex flex-col">
+  <view class="min-h-80vh bg-appbg flex flex-col">
     <!-- Header -->
     <view class="flex items-center justify-between px-4 pt-12 pb-4">
       <view class="p-2 active:opacity-70" @click="goBack">

@@ -60,7 +60,7 @@ function handleRegister() {
 </script>
 
 <template>
-  <view class="min-h-100vh bg-appbg flex flex-col items-center justify-center">
+  <view class="min-h-80vh bg-appbg flex flex-col items-center justify-center">
     <!-- Logo Area -->
     <view class="mb-10 flex flex-col items-center">
       <view

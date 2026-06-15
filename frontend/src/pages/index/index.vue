@@ -50,9 +50,9 @@ function switchTo(url: string) { uni.switchTab({ url }) }
 </script>
 
 <template>
-  <view class="min-h-100vh bg-appbg">
+  <view class="min-h-80vh bg-appbg">
     <!-- Header -->
-    <view class="flex items-center justify-between px-6 pt-12 pb-4">
+    <view class="flex items-center justify-between px-6 pt-12 pb-4" style="padding-right: 100px">
       <view class="flex items-center gap-3">
         <view class="w-48px h-48px rounded-full flex items-center justify-center" style="background: #EBF3FD; border: 2px solid #fff; box-shadow: 0 1px 4px rgba(0,0,0,0.08)">
           <wd-icon name="user" size="24px" color="#4A90E2" />
@@ -157,7 +157,5 @@ function switchTo(url: string) { uni.switchTab({ url }) }
       </view>
       <wd-icon name="arrow-right" size="18px" color="#999" />
     </view>
-
-    <view class="h-20" />
   </view>
 </template>

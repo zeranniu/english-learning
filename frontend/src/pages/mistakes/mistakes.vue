@@ -35,7 +35,7 @@ onShow(() => { loadMistakes() })
 </script>
 
 <template>
-  <view class="min-h-100vh bg-appbg">
+  <view class="min-h-80vh bg-appbg">
     <view class="flex items-center justify-between px-4 pt-12 pb-4">
       <view class="p-2 active:opacity-70" @click="goBack"><wd-icon name="arrow-left" size="22px" color="#333" /></view>
       <text class="text-16px font-bold text-textMain">错题本</text>
