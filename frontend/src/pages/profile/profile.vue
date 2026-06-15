@@ -1,5 +1,7 @@
 <script lang="ts" setup>
+import { ref, onMounted } from 'vue'
 import { useTokenStore } from '@/store/token'
+import { httpGet } from '@/http/http'
 
 defineOptions({ name: 'Profile' })
 definePage({
@@ -7,6 +9,16 @@ definePage({
     navigationStyle: 'custom',
     navigationBarTitleText: '我的',
   },
+})
+
+// 用户信息
+const userInfo = ref({
+  nickname: '',
+  grade: '',
+  studentNo: '',
+  studyDays: 0,
+  totalScore: 0,
+  level: 1,
 })
 
 const menuItems = [
@@ -20,6 +32,29 @@ const menuItems = [
 ]
 
 const darkMode = ref(false)
+
+// 获取用户信息
+async function loadUserInfo() {
+  try {
+    const data: any = await httpGet('/auth/profile')
+    if (data) {
+      userInfo.value = {
+        nickname: data.nickname || '用户',
+        grade: data.grade || '',
+        studentNo: data.studentNo || '',
+        studyDays: data.studyDays || 0,
+        totalScore: data.totalScore || 0,
+        level: data.level || 1,
+      }
+    }
+  } catch (e) {
+    console.error('获取用户信息失败:', e)
+  }
+}
+
+onMounted(() => {
+  loadUserInfo()
+})
 
 function handleClick(item: typeof menuItems[0]) {
   if (item.toggle) {
@@ -55,24 +90,24 @@ async function handleLogout() {
       <view class="w-80px h-80px rounded-full flex items-center justify-center overflow-hidden mb-3 border-2 border-white" style="background: #EBF3FD; box-shadow: 0 2px 8px rgba(0,0,0,0.1)">
         <wd-icon name="user" size="40px" color="#4A90E2" />
       </view>
-      <text class="text-18px font-bold text-textMain">小明同学</text>
-      <text class="text-13px text-textSub mt-1">三年级 · 学号 2024001</text>
+      <text class="text-18px font-bold text-textMain">{{ userInfo.nickname }}</text>
+      <text class="text-13px text-textSub mt-1">{{ userInfo.grade }} · 学号 {{ userInfo.studentNo }}</text>
     </view>
 
     <!-- Stats Row -->
     <view class="mx-4 mb-6 bg-white rounded-16px p-4 flex justify-around border" style="border-color: #E5E7EB; box-shadow: 0 4px 16px rgba(0,0,0,0.05)">
       <view class="text-center">
-        <text class="text-20px font-bold block" style="color: #4A90E2">128</text>
+        <text class="text-20px font-bold block" style="color: #4A90E2">{{ userInfo.studyDays }}</text>
         <text class="text-11px text-textSub mt-1 block">学习天数</text>
       </view>
       <view class="w-1px bg-gray-100" />
       <view class="text-center">
-        <text class="text-20px font-bold block" style="color: #FF9F43">1560</text>
+        <text class="text-20px font-bold block" style="color: #FF9F43">{{ userInfo.totalScore }}</text>
         <text class="text-11px text-textSub mt-1 block">总积分</text>
       </view>
       <view class="w-1px bg-gray-100" />
       <view class="text-center">
-        <text class="text-20px font-bold block" style="color: #2ECC71">Lv.5</text>
+        <text class="text-20px font-bold block" style="color: #2ECC71">Lv.{{ userInfo.level }}</text>
         <text class="text-11px text-textSub mt-1 block">当前等级</text>
       </view>
     </view>
