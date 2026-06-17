@@ -15,16 +15,19 @@ const playbackRate = ref(1.0)
 const progressWidth = ref(35)
 const currentTime = ref('1:18')
 const showFeedback = ref(false)
+const loading = ref(true)
 
-const lessonTitle = ref('Lesson 3 - My Friends')
-const lessonDuration = ref('3:45')
-const questionText = ref('Who is the boy in the photo?')
+const lessonTitle = ref('')
+const lessonDuration = ref('')
+const questionText = ref('')
+const currentQuestionId = ref(1)
 
-const options = ref([
-  { label: 'The boy is Tom.', correct: true },
-  { label: 'The boy is Sam.', correct: false },
-  { label: 'The boy is Mike.', correct: false },
-])
+const options = ref<any[]>([])
+
+// 学习计时
+const startTime = ref(Date.now())
+const correctCount = ref(0)
+const totalQuestions = ref(0)
 
 function togglePlay() {
   isPlaying.value = !isPlaying.value
@@ -41,13 +44,34 @@ function toggleSpeed() {
   uni.showToast({ title: `倍速: ${playbackRate.value.toFixed(1)}x`, icon: 'none' })
 }
 
-function selectAnswer(index: number) {
-  if (options.value[index].correct) {
+async function selectAnswer(index: number) {
+  if (options.value[index]?.correct) {
+    correctCount.value++
     showFeedback.value = true
-    uni.showToast({ title: '正确！经验值+5', icon: 'none' })
+    uni.showToast({ title: '正确！', icon: 'none' })
   }
   else {
     uni.showToast({ title: '答错了，请再仔细听听', icon: 'none' })
+  }
+
+  // 完成所有题目后，记录学习会话
+  if (showFeedback.value) {
+    const endTime = Date.now()
+    const durationMinutes = Math.max(1, Math.round((endTime - startTime.value) / 60000))
+    const score = correctCount.value
+
+    if (APP_CONFIG.DATA_MODE === 1) {
+      try {
+        await listeningApi.completeSession({ durationMinutes, score })
+      } catch (e) {
+        console.error('Listening completeSession error:', e)
+      }
+    }
+
+    setTimeout(() => {
+      uni.showToast({ title: `听力练习完成！得分:${score}/${totalQuestions.value}`, icon: 'none' })
+      setTimeout(() => uni.navigateBack(), 2000)
+    }, 1500)
   }
 }
 
@@ -55,25 +79,50 @@ function goBack() {
   uni.navigateBack()
 }
 
+// 从后端加载听力课程数据
 async function loadLesson() {
-  if (APP_CONFIG.DATA_MODE !== 1) return
+  loading.value = true
+  startTime.value = Date.now() // 重置计时
+  correctCount.value = 0
   try {
-    const res = await listeningApi.getLessonDetail(1)
-    if (res?.lesson) {
-      lessonTitle.value = res.lesson.title
-      lessonDuration.value = res.lesson.duration
-    }
-    if (res?.questions?.length > 0) {
-      const q = res.questions[0]
-      questionText.value = q.questionText
+    if (APP_CONFIG.DATA_MODE === 1) {
+      // 从后端API获取
+      const res = await listeningApi.getLessonDetail(1)
+      if (res?.lesson) {
+        lessonTitle.value = res.lesson.title
+        lessonDuration.value = res.lesson.duration || '3:45'
+      }
+      if (res?.questions?.length > 0) {
+        const q = res.questions[0]
+        currentQuestionId.value = q.id || 1
+        questionText.value = q.questionText
+        totalQuestions.value = 1 // 简化为1题
+        options.value = [
+          { label: q.optionA, correct: q.correctOption === 'A' },
+          { label: q.optionB, correct: q.correctOption === 'B' },
+          { label: q.optionC, correct: q.correctOption === 'C' },
+        ]
+      }
+    } else {
+      // 静态模拟数据（仅用于开发测试）
+      lessonTitle.value = 'Lesson 3 - My Friends'
+      lessonDuration.value = '3:45'
+      questionText.value = 'Who is the boy in the photo?'
+      totalQuestions.value = 1
       options.value = [
-        { label: q.optionA, correct: q.correctOption === 'A' },
-        { label: q.optionB, correct: q.correctOption === 'B' },
-        { label: q.optionC, correct: q.correctOption === 'C' },
+        { label: 'The boy is Tom.', correct: true },
+        { label: 'The boy is Sam.', correct: false },
+        { label: 'The boy is Mike.', correct: false },
       ]
     }
-  } catch (e) { console.error('Listening loadLesson error:', e) }
+  } catch (e) {
+    console.error('Listening loadLesson error:', e)
+    uni.showToast({ title: '加载听力课程失败', icon: 'none' })
+  } finally {
+    loading.value = false
+  }
 }
+
 onShow(() => { loadLesson() })
 </script>
 
@@ -95,8 +144,8 @@ onShow(() => { loadLesson() })
           <wd-icon name="headset" size="22px" color="#FF9F43" />
         </view>
         <view class="flex-1">
-          <text class="text-14px font-bold text-textMain block">Lesson 3 - My Friends</text>
-          <text class="text-12px text-textSub block mt-1">共 3:45</text>
+          <text class="text-14px font-bold text-textMain block">{{ lessonTitle || 'Loading...' }}</text>
+          <text class="text-12px text-textSub block mt-1">共 {{ lessonDuration || '3:45' }}</text>
         </view>
       </view>
 
@@ -106,7 +155,7 @@ onShow(() => { loadLesson() })
       </view>
       <view class="flex justify-between text-11px text-textLight">
         <text>{{ currentTime }}</text>
-        <text>3:45</text>
+        <text>{{ lessonDuration || '3:45' }}</text>
       </view>
 
       <!-- Controls -->
@@ -128,7 +177,7 @@ onShow(() => { loadLesson() })
     <!-- Question -->
     <view class="mx-4 mb-4">
       <text class="text-14px font-bold text-textMain block mb-3">听一听，选一选</text>
-      <text class="text-13px text-textSub block mb-4">Who is the boy in the photo?</text>
+      <text class="text-13px text-textSub block mb-4">{{ questionText }}</text>
     </view>
 
     <!-- Options -->

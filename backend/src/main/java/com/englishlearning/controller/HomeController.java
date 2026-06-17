@@ -34,17 +34,17 @@ public class HomeController {
                         .and(DAILY_STUDY_LOG.STUDY_DATE.eq(LocalDate.now())));
 
         Map<String, Object> data = new HashMap<>();
-        data.put("nickname", user.getNickname());
-        data.put("grade", user.getGrade());
-        data.put("streakDays", user.getStreakDays());
-        data.put("studyMinutes", log != null ? log.getStudyMinutes() : 0);
-        data.put("tasksCompleted", log != null ? log.getTasksCompleted() : 0);
-        data.put("weekScore", log != null ? log.getWeekScore() : 0);
-        data.put("weekRank", log != null ? log.getWeekRank() : 0);
-        data.put("level", user.getLevel());
-        data.put("levelName", user.getLevelName());
-        data.put("exp", user.getExp());
-        data.put("expMax", user.getExpMax());
+        data.put("nickname", user != null ? user.getNickname() : "用户");
+        data.put("grade", user != null ? user.getGrade() : "");
+        data.put("streakDays", user != null && user.getStreakDays() != null ? user.getStreakDays() : 0);
+        data.put("studyMinutes", log != null && log.getStudyMinutes() != null ? log.getStudyMinutes() : 0);
+        data.put("tasksCompleted", log != null && log.getTasksCompleted() != null ? log.getTasksCompleted() : 0);
+        data.put("weekScore", log != null && log.getWeekScore() != null ? log.getWeekScore() : 0);
+        data.put("weekRank", log != null && log.getWeekRank() != null ? log.getWeekRank() : 0);
+        data.put("level", user != null && user.getLevel() != null ? user.getLevel() : 1);
+        data.put("levelName", user != null ? user.getLevelName() : "新手");
+        data.put("exp", user != null && user.getExp() != null ? user.getExp() : 0);
+        data.put("expMax", user != null && user.getExpMax() != null ? user.getExpMax() : 100);
         return R.ok(data);
     }
 

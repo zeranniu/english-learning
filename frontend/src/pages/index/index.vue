@@ -31,7 +31,6 @@ const quickEntries = [
 ]
 
 async function loadData() {
-  if (APP_CONFIG.DATA_MODE !== 1) return
   // 未登录时不请求接口
   const tokenStore = useTokenStore()
   if (!tokenStore.updateNowTime().hasLogin) return

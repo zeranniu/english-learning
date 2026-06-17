@@ -19,6 +19,7 @@ export const homeApi = {
 export const vocabApi = {
   getWords: () => httpGet<any>('/vocab/words'),
   learnWord: (data: { wordId: number; known: boolean }) => httpPost<any>('/vocab/learn', data),
+  completeSession: (data: { durationMinutes: number; score: number }) => httpPost<any>('/vocab/complete-session', data),
   speakWord: (word: string) => httpPost<any>('/vocab/speak', { word }),
 }
 
@@ -27,6 +28,7 @@ export const listeningApi = {
   getLessons: () => httpGet<any>('/listening/lessons'),
   getLessonDetail: (id: number) => httpGet<any>(`/listening/lesson/${id}`),
   answerQuestion: (data: { questionId: number; answer: string }) => httpPost<any>('/listening/answer', data),
+  completeSession: (data: { durationMinutes: number; score: number }) => httpPost<any>('/listening/complete-session', data),
 }
 
 // Reading
@@ -34,12 +36,14 @@ export const readingApi = {
   getPassages: () => httpGet<any>('/reading/passages'),
   getPassageDetail: (id: number) => httpGet<any>(`/reading/passage/${id}`),
   answerQuestion: (data: { questionId: number; answerIndex: number }) => httpPost<any>('/reading/answer', data),
+  completeSession: (data: { durationMinutes: number; score: number }) => httpPost<any>('/reading/complete-session', data),
 }
 
 // Grammar
 export const grammarApi = {
   getQuestions: () => httpGet<any>('/grammar/questions'),
   answerQuestion: (data: { questionId: number; selectedIndex: number }) => httpPost<any>('/grammar/answer', data),
+  completeSession: (data: { durationMinutes: number; score: number }) => httpPost<any>('/grammar/complete-session', data),
 }
 
 // PK

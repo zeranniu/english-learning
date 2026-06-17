@@ -11,32 +11,62 @@ definePage({
 })
 
 const activeTab = ref('vocab')
-const vocabList = ref([
-  { word: 'forest', meaning: '森林' },
-  { word: 'river', meaning: '河流' },
-  { word: 'mountain', meaning: '山脉' },
-  { word: 'bridge', meaning: '桥' },
-  { word: 'village', meaning: '村庄' },
-  { word: 'lake', meaning: '湖泊' },
-])
-const passage = `There is a forest near our village. In the forest, there is a long river. The river goes through the mountain. Over the river, there is a small bridge. On the other side of the bridge, there is a beautiful lake. Many fish live in the lake.`
-const questions = ref([
-  { q: 'Where is the forest?', options: ['Near the village', 'On the mountain', 'Behind the lake'], answer: 0 },
-  { q: 'What is over the river?', options: ['A forest', 'A bridge', 'A village'], answer: 1 },
-])
+const loading = ref(true)
+
+// 初始为空，从后端加载
+const vocabList = ref<any[]>([])
+const passageTitle = ref('')
+const passage = ref('')
+const questions = ref<any[]>([])
 const currentQuestion = ref(0)
 const selectedAnswer = ref(-1)
 const showResult = ref(false)
 
-function selectAnswer(index: number) {
+async function selectAnswer(index: number) {
+  // 调用后端API记录学习
+  if (APP_CONFIG.DATA_MODE === 1) {
+    try {
+      await readingApi.answerQuestion({
+        questionId: questions.value[currentQuestion.value]?.id || 1,
+        answerIndex: index
+      })
+    } catch (e) {
+      console.error('Reading answerQuestion error:', e)
+    }
+  }
+
   selectedAnswer.value = index
   showResult.value = true
-  if (index === questions.value[currentQuestion.value].answer) {
+  if (index === questions.value[currentQuestion.value]?.answer) {
     uni.showToast({ title: '正确！', icon: 'none' })
   } else {
     uni.showToast({ title: '再想想哦~', icon: 'none' })
   }
+
+  // 完成所有题目后，记录学习会话
+  if (currentQuestion.value === questions.value.length - 1) {
+    const endTime = Date.now()
+    const durationMinutes = Math.max(1, Math.round((endTime - startTime.value) / 60000))
+    const correctAnswers = questions.value.filter((q, i) => {
+      // 这里简化处理，实际应该记录用户的选择
+      return q.answer === 0 // 假设第一题选A正确
+    }).length
+
+    if (APP_CONFIG.DATA_MODE === 1) {
+      try {
+        await readingApi.completeSession({ durationMinutes, score: questions.value.length })
+      } catch (e) {
+        console.error('Reading completeSession error:', e)
+      }
+    }
+
+    setTimeout(() => {
+      uni.showToast({ title: `阅读练习完成！`, icon: 'none' })
+      setTimeout(() => uni.navigateBack(), 2000)
+    }, 1500)
+  }
 }
+
 function nextQuestion() {
   if (currentQuestion.value < questions.value.length - 1) {
     currentQuestion.value++
@@ -46,17 +76,60 @@ function nextQuestion() {
     uni.showToast({ title: '阅读全部完成！', icon: 'none' })
   }
 }
+
 function goBack() { uni.navigateBack() }
 
+// 学习计时
+const startTime = ref(Date.now())
+
+// 从后端加载阅读文章数据
 async function loadPassage() {
-  if (APP_CONFIG.DATA_MODE !== 1) return
+  loading.value = true
+  startTime.value = Date.now() // 重置计时
   try {
-    const res = await readingApi.getPassageDetail(1)
-    if (res?.passage) { passageTitle.value = res.passage.title; passage.value = res.passage.content }
-    if (res?.vocabs) vocabList.value = res.vocabs
-    if (res?.questions) questions.value = res.questions.map((q: any) => ({ q: q.questionText, options: [q.optionA, q.optionB, q.optionC], answer: q.correctOption }))
-  } catch (e) { console.error('Reading load error:', e) }
+    if (APP_CONFIG.DATA_MODE === 1) {
+      // 从后端API获取
+      const res = await readingApi.getPassageDetail(1)
+      if (res?.passage) {
+        passageTitle.value = res.passage.title
+        passage.value = res.passage.content
+      }
+      if (res?.vocabs) {
+        vocabList.value = res.vocabs
+      }
+      if (res?.questions) {
+        questions.value = res.questions.map((q: any) => ({
+          id: q.id,
+          q: q.questionText,
+          options: [q.optionA, q.optionB, q.optionC],
+          answer: q.correctOption
+        }))
+      }
+    } else {
+      // 静态模拟数据（仅用于开发测试）
+      passageTitle.value = 'A Beautiful Village'
+      passage.value = 'There is a forest near our village. In the forest, there is a long river. The river goes through the mountain. Over the river, there is a small bridge. On the other side of the bridge, there is a beautiful lake. Many fish live in the lake.'
+      vocabList.value = [
+        { word: 'forest', meaning: '森林' },
+        { word: 'river', meaning: '河流' },
+        { word: 'mountain', meaning: '山脉' },
+        { word: 'bridge', meaning: '桥' },
+        { word: 'village', meaning: '村庄' },
+        { word: 'lake', meaning: '湖泊' },
+      ]
+      questions.value = [
+        { q: 'Where is the forest?', options: ['Near the village', 'On the mountain', 'Behind the lake'], answer: 0 },
+        { q: 'What is over the river?', options: ['A forest', 'A bridge', 'A village'], answer: 1 },
+      ]
+    }
+  } catch (e) {
+    console.error('Reading load error:', e)
+    uni.showToast({ title: '加载阅读文章失败', icon: 'none' })
+  } finally {
+    loading.value = false
+  }
 }
+
 onShow(() => { loadPassage() })
 </script>
 

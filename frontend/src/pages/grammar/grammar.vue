@@ -10,32 +10,34 @@ definePage({
   },
 })
 
-const grammarQuestions = [
-  {
-    question: 'I _____ a student.',
-    options: ['A. am', 'B. is', 'C. are', 'D. be'],
-    correct: 0,
-    explanation: '解析：主语第一人称单数 I 对应的 be 动词形式必须是 am。',
-  },
-  {
-    question: 'She _____ like apples.',
-    options: ['A. don\'t', 'B. doesn\'t', 'C. isn\'t', 'D. not'],
-    correct: 1,
-    explanation: '解析：单三人称否定助动词使用 doesn\'t。',
-  },
-]
+const loading = ref(true)
 
+// 初始为空数组，从后端加载
+const grammarQuestions = ref<any[]>([])
 const currentIndex = ref(0)
 const selectedIndex = ref(-1)
 const showExplanation = ref(false)
 
-const currentQ = computed(() => grammarQuestions[currentIndex.value])
-const progressText = computed(() => `${currentIndex.value + 1}/${grammarQuestions.length}`)
-const progressPercent = computed(() => ((currentIndex.value + 1) / grammarQuestions.length) * 100)
+const currentQ = computed(() => grammarQuestions.value[currentIndex.value] || {})
+const progressText = computed(() => `${currentIndex.value + 1}/${grammarQuestions.value.length}`)
+const progressPercent = computed(() => grammarQuestions.value.length > 0 ? ((currentIndex.value + 1) / grammarQuestions.value.length) * 100 : 0)
 
-function selectOption(index: number) {
+async function selectOption(index: number) {
   if (selectedIndex.value !== -1)
     return
+
+  // 调用后端API记录学习
+  if (APP_CONFIG.DATA_MODE === 1) {
+    try {
+      await grammarApi.answerQuestion({
+        questionId: grammarQuestions.value[currentIndex.value]?.id || 1,
+        selectedIndex: index
+      })
+    } catch (e) {
+      console.error('Grammar answerQuestion error:', e)
+    }
+  }
+
   selectedIndex.value = index
   showExplanation.value = true
   if (index === currentQ.value.correct) {
@@ -44,10 +46,30 @@ function selectOption(index: number) {
   else {
     uni.showToast({ title: '答错了，看看解析吧', icon: 'none' })
   }
+
+  // 完成所有题目后，记录学习会话
+  if (currentIndex.value === grammarQuestions.value.length - 1) {
+    const endTime = Date.now()
+    const durationMinutes = Math.max(1, Math.round((endTime - startTime.value) / 60000))
+    const score = grammarQuestions.value.length // 每题1分
+
+    if (APP_CONFIG.DATA_MODE === 1) {
+      try {
+        await grammarApi.completeSession({ durationMinutes, score })
+      } catch (e) {
+        console.error('Grammar completeSession error:', e)
+      }
+    }
+
+    setTimeout(() => {
+      uni.showToast({ title: `语法练习完成！`, icon: 'none' })
+      setTimeout(() => uni.navigateBack(), 2000)
+    }, 1500)
+  }
 }
 
 function nextQuestion() {
-  if (currentIndex.value < grammarQuestions.length - 1) {
+  if (currentIndex.value < grammarQuestions.value.length - 1) {
     currentIndex.value++
     selectedIndex.value = -1
     showExplanation.value = false
@@ -62,20 +84,51 @@ function goBack() {
   uni.navigateBack()
 }
 
+// 学习计时
+const startTime = ref(Date.now())
+
+// 从后端加载语法题目数据
 async function loadQuestions() {
-  if (APP_CONFIG.DATA_MODE !== 1) return
+  loading.value = true
+  startTime.value = Date.now() // 重置计时
   try {
-    const res = await grammarApi.getQuestions()
-    if (res && Array.isArray(res) && res.length > 0) {
-      grammarQuestions.splice(0, grammarQuestions.length, ...res.map((q: any) => ({
-        question: q.questionText,
-        options: [q.optionA, q.optionB, q.optionC, q.optionD],
-        correct: q.correctOption,
-        explanation: q.explanation,
-      })))
+    if (APP_CONFIG.DATA_MODE === 1) {
+      // 从后端API获取
+      const res = await grammarApi.getQuestions()
+      if (res && Array.isArray(res) && res.length > 0) {
+        grammarQuestions.value = res.map((q: any) => ({
+          id: q.id,
+          question: q.questionText,
+          options: [q.optionA, q.optionB, q.optionC, q.optionD],
+          correct: q.correctOption,
+          explanation: q.explanation,
+        }))
+      }
+    } else {
+      // 静态模拟数据（仅用于开发测试）
+      grammarQuestions.value = [
+        {
+          question: 'I _____ a student.',
+          options: ['A. am', 'B. is', 'C. are', 'D. be'],
+          correct: 0,
+          explanation: '解析：主语第一人称单数 I 对应的 be 动词形式必须是 am。',
+        },
+        {
+          question: 'She _____ like apples.',
+          options: ['A. don\'t', 'B. doesn\'t', 'C. isn\'t', 'D. not'],
+          correct: 1,
+          explanation: '解析：单三人称否定助动词使用 doesn\'t。',
+        },
+      ]
     }
-  } catch (e) { console.error('Grammar load error:', e) }
+  } catch (e) {
+    console.error('Grammar load error:', e)
+    uni.showToast({ title: '加载语法题目失败', icon: 'none' })
+  } finally {
+    loading.value = false
+  }
 }
+
 onShow(() => { loadQuestions() })
 </script>
 

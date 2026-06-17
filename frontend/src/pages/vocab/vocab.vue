@@ -10,19 +10,19 @@ definePage({
   },
 })
 
-const vocabList = [
-  { word: 'book', phonetic: '[bʊk]', translation: '书本', icon: 'book', iconColor: '#4A90E2' },
-  { word: 'car', phonetic: '[kɑːr]', translation: '汽车', icon: 'location', iconColor: '#EF4444' },
-  { word: 'cat', phonetic: '[kæt]', translation: '小猫', icon: 'compass', iconColor: '#FF9F43' },
-  { word: 'sun', phonetic: '[sʌn]', translation: '太阳', icon: 'sun', iconColor: '#EAB308' }
-]
-
+// 初始为空数组，从后端加载
+const vocabList = ref<any[]>([])
 const currentIndex = ref(0)
 const showTranslation = ref(false)
+const loading = ref(true)
 
-const currentWord = computed(() => vocabList[currentIndex.value])
-const progressText = computed(() => `${currentIndex.value + 1}/${vocabList.length}`)
-const progressPercent = computed(() => ((currentIndex.value + 1) / vocabList.length) * 100)
+// 学习计时
+const startTime = ref(Date.now())
+const correctCount = ref(0)
+
+const currentWord = computed(() => vocabList.value[currentIndex.value] || {})
+const progressText = computed(() => `${currentIndex.value + 1}/${vocabList.value.length}`)
+const progressPercent = computed(() => vocabList.value.length > 0 ? ((currentIndex.value + 1) / vocabList.value.length) * 100 : 0)
 
 function speakWord() {
   uni.showToast({ title: `发音: ${currentWord.value.word}`, icon: 'none' })
@@ -32,8 +32,9 @@ function toggleTranslation() {
   showTranslation.value = !showTranslation.value
 }
 
-function nextWord(known: boolean) {
+async function nextWord(known: boolean) {
   if (known) {
+    correctCount.value++
     uni.showToast({ title: '太棒了，又记住了一个词！', icon: 'none' })
   }
   else {
@@ -41,9 +42,23 @@ function nextWord(known: boolean) {
   }
   showTranslation.value = false
   currentIndex.value++
-  if (currentIndex.value >= vocabList.length) {
-    uni.showToast({ title: '今日单词全部完成！ 经验+15', icon: 'none' })
-    setTimeout(() => uni.navigateBack(), 1500)
+
+  // 完成所有单词后，记录学习会话
+  if (currentIndex.value >= vocabList.value.length) {
+    const endTime = Date.now()
+    const durationMinutes = Math.max(1, Math.round((endTime - startTime.value) / 60000)) // 至少1分钟
+    const score = correctCount.value // 每题1分
+
+    if (APP_CONFIG.DATA_MODE === 1) {
+      try {
+        await vocabApi.completeSession({ durationMinutes, score })
+      } catch (e) {
+        console.error('Vocab completeSession error:', e)
+      }
+    }
+
+    uni.showToast({ title: `今日单词全部完成！得分:${score}/${vocabList.value.length}`, icon: 'none' })
+    setTimeout(() => uni.navigateBack(), 2000)
   }
 }
 
@@ -51,13 +66,35 @@ function goBack() {
   uni.navigateBack()
 }
 
+// 从后端加载单词数据
 async function loadWords() {
-  if (APP_CONFIG.DATA_MODE !== 1) return
+  loading.value = true
+  startTime.value = Date.now() // 重置计时
+  correctCount.value = 0
   try {
-    const res = await vocabApi.getWords()
-    if (res && res.words) vocabList.value = res.words
-  } catch (e) { console.error('Vocab loadWords error:', e) }
+    if (APP_CONFIG.DATA_MODE === 1) {
+      // 从后端API获取
+      const res = await vocabApi.getWords()
+      if (res && res.words) {
+        vocabList.value = res.words
+      }
+    } else {
+      // 静态模拟数据（仅用于开发测试）
+      vocabList.value = [
+        { id: 1, word: 'book', phonetic: '[bʊk]', translation: '书本', icon: 'book', iconColor: '#4A90E2' },
+        { id: 2, word: 'car', phonetic: '[kɑːr]', translation: '汽车', icon: 'location', iconColor: '#EF4444' },
+        { id: 3, word: 'cat', phonetic: '[kæt]', translation: '小猫', icon: 'compass', iconColor: '#FF9F43' },
+        { id: 4, word: 'sun', phonetic: '[sʌn]', translation: '太阳', icon: 'sun', iconColor: '#EAB308' }
+      ]
+    }
+  } catch (e) {
+    console.error('Vocab loadWords error:', e)
+    uni.showToast({ title: '加载单词失败', icon: 'none' })
+  } finally {
+    loading.value = false
+  }
 }
+
 onShow(() => { loadWords() })
 </script>
 
