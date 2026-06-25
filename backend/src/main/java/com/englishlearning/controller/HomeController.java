@@ -11,6 +11,7 @@ import java.time.LocalDate;
 import java.util.*;
 
 import static com.englishlearning.entity.table.DailyStudyLogTableDef.DAILY_STUDY_LOG;
+import static com.englishlearning.entity.table.TaskConfigTableDef.TASK_CONFIG;
 
 @RestController
 @RequestMapping("/home")
@@ -18,11 +19,13 @@ public class HomeController {
     private final UserMapper userMapper;
     private final DailyStudyLogMapper dailyLogMapper;
     private final UserBadgeMapper badgeMapper;
+    private final TaskConfigMapper taskConfigMapper;
 
-    public HomeController(UserMapper userMapper, DailyStudyLogMapper dailyLogMapper, UserBadgeMapper badgeMapper) {
+    public HomeController(UserMapper userMapper, DailyStudyLogMapper dailyLogMapper, UserBadgeMapper badgeMapper, TaskConfigMapper taskConfigMapper) {
         this.userMapper = userMapper;
         this.dailyLogMapper = dailyLogMapper;
         this.badgeMapper = badgeMapper;
+        this.taskConfigMapper = taskConfigMapper;
     }
 
     @GetMapping("/stats")
@@ -51,11 +54,53 @@ public class HomeController {
     @GetMapping("/tasks")
     public R<?> getTasks() {
         Long userId = UserContext.getCurrentUserId();
+        User user = userMapper.selectOneById(userId);
+        String grade = user != null ? user.getGrade() : "三年级";
+
+        // 获取今日学习记录
+        DailyStudyLog todayLog = dailyLogMapper.selectOneByQuery(
+                QueryWrapper.create()
+                        .where(DAILY_STUDY_LOG.USER_ID.eq(userId))
+                        .and(DAILY_STUDY_LOG.STUDY_DATE.eq(LocalDate.now()))
+        );
+        int tasksCompleted = todayLog != null && todayLog.getTasksCompleted() != null ? todayLog.getTasksCompleted() : 0;
+
+        // 从数据库获取该年级的任务配置
+        List<TaskConfig> taskConfigs = taskConfigMapper.selectListByQuery(
+                QueryWrapper.create()
+                        .where(TASK_CONFIG.GRADE.eq(grade))
+                        .and(TASK_CONFIG.ENABLED.eq(true))
+                        .and(TASK_CONFIG.IS_DELETED.eq(false))
+                        .orderBy(TASK_CONFIG.SORT_ORDER, true)
+        );
+
+        // 构建任务列表
         List<Map<String, Object>> tasks = new ArrayList<>();
-        tasks.add(Map.of("id", 1, "title", "学习10个单词", "done", true, "progress", "10/10", "target", "/pages/vocab/vocab"));
-        tasks.add(Map.of("id", 2, "title", "完成1篇听力", "done", true, "progress", "1/1", "target", "/pages/listening/listening"));
-        tasks.add(Map.of("id", 3, "title", "完成1篇阅读", "done", false, "progress", "0/1", "target", "/pages/reading/reading"));
+        int taskIndex = 0;
+        for (TaskConfig config : taskConfigs) {
+            boolean isDone = tasksCompleted > taskIndex;
+            Map<String, Object> task = new HashMap<>();
+            task.put("id", config.getId());
+            task.put("title", config.getTaskTitle());
+            task.put("done", isDone);
+            task.put("progress", (isDone ? config.getTaskTarget() : 0) + "/" + config.getTaskTarget());
+            task.put("target", getTargetUrl(config.getTaskType()));
+            tasks.add(task);
+            taskIndex++;
+        }
+
         return R.ok(tasks);
+    }
+
+    private String getTargetUrl(String taskType) {
+        if (taskType == null) return "/pages/index/index";
+        return switch (taskType) {
+            case "vocab" -> "/pages/vocab/vocab";
+            case "listening" -> "/pages/listening/listening";
+            case "reading" -> "/pages/reading/reading";
+            case "grammar" -> "/pages/grammar/grammar";
+            default -> "/pages/index/index";
+        };
     }
 
     @GetMapping("/badges")

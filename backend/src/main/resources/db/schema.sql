@@ -261,3 +261,19 @@ CREATE TABLE IF NOT EXISTS sys_operation_log (
     ip VARCHAR(50),
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
+
+-- ==================== 任务配置表 ====================
+
+-- 任务配置表（支持按年级配置每日任务）
+CREATE TABLE IF NOT EXISTS task_config (
+    id BIGSERIAL PRIMARY KEY,
+    grade VARCHAR(20) NOT NULL,
+    task_type VARCHAR(50) NOT NULL,
+    task_title VARCHAR(200) NOT NULL,
+    task_target INTEGER DEFAULT 1,
+    sort_order INT DEFAULT 0,
+    enabled BOOLEAN DEFAULT TRUE,
+    is_deleted BOOLEAN DEFAULT FALSE,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);

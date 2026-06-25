@@ -148,3 +148,50 @@ ON CONFLICT DO NOTHING;
 INSERT INTO sys_admin_role (admin_id, role_id)
 SELECT a.id, r.id FROM sys_admin a, sys_role r WHERE a.username = 'admin' AND r.role_code = 'super_admin'
 ON CONFLICT DO NOTHING;
+
+-- ==================== 任务配置初始数据 ====================
+
+-- 一年级任务
+INSERT INTO task_config (grade, task_type, task_title, task_target, sort_order, enabled) VALUES
+('一年级', 'vocab', '学习 5 个单词', 5, 1, true),
+('一年级', 'listening', '完成 1 篇听力', 1, 2, true),
+('一年级', 'reading', '完成 1 篇阅读', 1, 3, true)
+ON CONFLICT DO NOTHING;
+
+-- 二年级任务
+INSERT INTO task_config (grade, task_type, task_title, task_target, sort_order, enabled) VALUES
+('二年级', 'vocab', '学习 8 个单词', 8, 1, true),
+('二年级', 'listening', '完成 1 篇听力', 1, 2, true),
+('二年级', 'reading', '完成 1 篇阅读', 1, 3, true)
+ON CONFLICT DO NOTHING;
+
+-- 三年级任务
+INSERT INTO task_config (grade, task_type, task_title, task_target, sort_order, enabled) VALUES
+('三年级', 'vocab', '学习 10 个单词', 10, 1, true),
+('三年级', 'listening', '完成 1 篇听力', 1, 2, true),
+('三年级', 'reading', '完成 1 篇阅读', 1, 3, true)
+ON CONFLICT DO NOTHING;
+
+-- 四年级任务
+INSERT INTO task_config (grade, task_type, task_title, task_target, sort_order, enabled) VALUES
+('四年级', 'vocab', '学习 12 个单词', 12, 1, true),
+('四年级', 'listening', '完成 1 篇听力', 1, 2, true),
+('四年级', 'reading', '完成 1 篇阅读', 1, 3, true),
+('四年级', 'grammar', '完成 1 篇语法', 1, 4, true)
+ON CONFLICT DO NOTHING;
+
+-- 五年级任务
+INSERT INTO task_config (grade, task_type, task_title, task_target, sort_order, enabled) VALUES
+('五年级', 'vocab', '学习 15 个单词', 15, 1, true),
+('五年级', 'listening', '完成 1 篇听力', 1, 2, true),
+('五年级', 'reading', '完成 1 篇阅读', 1, 3, true),
+('五年级', 'grammar', '完成 1 篇语法', 1, 4, true)
+ON CONFLICT DO NOTHING;
+
+-- 六年级任务
+INSERT INTO task_config (grade, task_type, task_title, task_target, sort_order, enabled) VALUES
+('六年级', 'vocab', '学习 20 个单词', 20, 1, true),
+('六年级', 'listening', '完成 1 篇听力', 1, 2, true),
+('六年级', 'reading', '完成 1 篇阅读', 1, 3, true),
+('六年级', 'grammar', '完成 2 篇语法', 2, 4, true)
+ON CONFLICT DO NOTHING;
