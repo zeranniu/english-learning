@@ -70,7 +70,7 @@ public class HomeController {
                 QueryWrapper.create()
                         .where(TASK_CONFIG.GRADE.eq(grade))
                         .and(TASK_CONFIG.ENABLED.eq(true))
-                        .and(TASK_CONFIG.IS_DELETED.eq(false))
+                        .and(TASK_CONFIG.IS_DELETED.eq(false).or(TASK_CONFIG.IS_DELETED.isNull()))
                         .orderBy(TASK_CONFIG.SORT_ORDER, true)
         );
 

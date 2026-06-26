@@ -9,35 +9,37 @@
       </template>
 
       <!-- 筛选栏 -->
-      <el-form :inline="true" class="filter-form">
-        <el-form-item label="年级">
-          <el-select v-model="filterGrade" placeholder="请选择年级" clearable @change="loadData">
-            <el-option label="一年级" value="一年级" />
-            <el-option label="二年级" value="二年级" />
-            <el-option label="三年级" value="三年级" />
-            <el-option label="四年级" value="四年级" />
-            <el-option label="五年级" value="五年级" />
-            <el-option label="六年级" value="六年级" />
-          </el-select>
-        </el-form-item>
-        <el-form-item label="任务类型">
-          <el-select v-model="filterType" placeholder="请选择类型" clearable @change="loadData">
-            <el-option label="单词学习" value="vocab" />
-            <el-option label="听力训练" value="listening" />
-            <el-option label="阅读理解" value="reading" />
-            <el-option label="语法练习" value="grammar" />
-          </el-select>
-        </el-form-item>
-        <el-form-item label="状态">
-          <el-select v-model="filterEnabled" placeholder="请选择状态" clearable @change="loadData">
-            <el-option label="启用" :value="true" />
-            <el-option label="禁用" :value="false" />
-          </el-select>
-        </el-form-item>
-        <el-form-item>
-          <el-button @click="resetFilter">重置</el-button>
-        </el-form-item>
-      </el-form>
+      <div class="filter-container">
+        <el-form :inline="true" class="filter-form">
+          <el-form-item label="年级">
+            <el-select v-model="filterGrade" placeholder="请选择年级" clearable style="width: 120px" @change="loadData">
+              <el-option label="一年级" value="一年级" />
+              <el-option label="二年级" value="二年级" />
+              <el-option label="三年级" value="三年级" />
+              <el-option label="四年级" value="四年级" />
+              <el-option label="五年级" value="五年级" />
+              <el-option label="六年级" value="六年级" />
+            </el-select>
+          </el-form-item>
+          <el-form-item label="任务类型">
+            <el-select v-model="filterType" placeholder="请选择类型" clearable style="width: 120px" @change="loadData">
+              <el-option label="单词学习" value="vocab" />
+              <el-option label="听力训练" value="listening" />
+              <el-option label="阅读理解" value="reading" />
+              <el-option label="语法练习" value="grammar" />
+            </el-select>
+          </el-form-item>
+          <el-form-item label="状态">
+            <el-select v-model="filterEnabled" placeholder="请选择状态" clearable style="width: 100px" @change="loadData">
+              <el-option label="启用" :value="true" />
+              <el-option label="禁用" :value="false" />
+            </el-select>
+          </el-form-item>
+          <el-form-item>
+            <el-button @click="resetFilter">重置</el-button>
+          </el-form-item>
+        </el-form>
+      </div>
 
       <!-- 任务列表 -->
       <el-table :data="taskList" border style="width: 100%">
@@ -301,7 +303,16 @@ onMounted(() => {
   align-items: center;
 }
 
+.filter-container {
+  padding: 18px 0 0 0;
+}
+
 .filter-form {
-  margin-bottom: 20px;
+  margin-bottom: 0;
+}
+
+.filter-form :deep(.el-form-item) {
+  margin-bottom: 18px;
+  margin-right: 16px;
 }
 </style>

@@ -27,6 +27,7 @@ const routes: RouteRecordRaw[] = [
       { path: 'content/grammar/edit/:id?', component: () => import('@/views/content/GrammarEditView.vue'), meta: { title: '语法编辑' } },
       { path: 'stats/mistake', component: () => import('@/views/stats/MistakeStatsView.vue'), meta: { title: '错题统计' } },
       { path: 'stats/data', component: () => import('@/views/stats/DataStatsView.vue'), meta: { title: '学习统计' } },
+      { path: 'task/config', component: () => import('@/views/task/TaskConfigView.vue'), meta: { title: '任务配置' } },
     ],
   },
 ]

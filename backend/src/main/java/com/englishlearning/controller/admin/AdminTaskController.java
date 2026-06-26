@@ -27,7 +27,7 @@ public class AdminTaskController {
             @RequestParam(defaultValue = "20") int pageSize) {
 
         QueryWrapper qw = QueryWrapper.create()
-                .where(TASK_CONFIG.IS_DELETED.eq(false));
+                .where(TASK_CONFIG.IS_DELETED.eq(false).or(TASK_CONFIG.IS_DELETED.isNull()));
         if (grade != null && !grade.isEmpty()) {
             qw.and(TASK_CONFIG.GRADE.eq(grade));
         }
