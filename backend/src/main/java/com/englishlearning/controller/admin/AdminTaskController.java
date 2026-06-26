@@ -3,10 +3,9 @@ package com.englishlearning.controller.admin;
 import com.englishlearning.common.R;
 import com.englishlearning.entity.TaskConfig;
 import com.englishlearning.mapper.TaskConfigMapper;
+import com.mybatisflex.core.paginate.Page;
 import com.mybatisflex.core.query.QueryWrapper;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
 
 import static com.englishlearning.entity.table.TaskConfigTableDef.TASK_CONFIG;
 
@@ -20,16 +19,29 @@ public class AdminTaskController {
     }
 
     @GetMapping("/list")
-    public R<?> list(@RequestParam(required = false) String grade) {
+    public R<?> list(
+            @RequestParam(required = false) String grade,
+            @RequestParam(required = false) String taskType,
+            @RequestParam(required = false) Boolean enabled,
+            @RequestParam(defaultValue = "1") int page,
+            @RequestParam(defaultValue = "20") int pageSize) {
+
         QueryWrapper qw = QueryWrapper.create()
                 .where(TASK_CONFIG.IS_DELETED.eq(false));
         if (grade != null && !grade.isEmpty()) {
             qw.and(TASK_CONFIG.GRADE.eq(grade));
         }
+        if (taskType != null && !taskType.isEmpty()) {
+            qw.and(TASK_CONFIG.TASK_TYPE.eq(taskType));
+        }
+        if (enabled != null) {
+            qw.and(TASK_CONFIG.ENABLED.eq(enabled));
+        }
         qw.orderBy(TASK_CONFIG.GRADE, true)
           .orderBy(TASK_CONFIG.SORT_ORDER, true);
-        List<TaskConfig> list = taskConfigMapper.selectListByQuery(qw);
-        return R.ok(list);
+
+        Page<TaskConfig> result = taskConfigMapper.paginate(Page.of(page, pageSize), qw);
+        return R.ok(java.util.Map.of("list", result.getRecords(), "total", result.getTotalRow(), "page", page, "pageSize", pageSize));
     }
 
     @PostMapping

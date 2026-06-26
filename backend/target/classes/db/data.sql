@@ -109,16 +109,14 @@ ON CONFLICT (role_code) DO NOTHING;
 INSERT INTO sys_menu (parent_id, name, path, component, icon, sort_order, visible, permission, type) VALUES
 (0, '数据看板', '/dashboard', 'dashboard/DashboardView', 'DataBoard', 1, TRUE, 'dashboard:view', 1),
 (0, '用户管理', '/user', '', 'User', 2, TRUE, 'user', 1),
-(0, '系统管理', '/system', '', 'Setting', 3, TRUE, 'system', 1),
+(0, '学习任务', '/task', '', 'Document', 3, TRUE, 'task', 1),
 (0, '题库管理', '/content', '', 'Collection', 4, TRUE, 'content', 1),
 (0, '数据统计', '/stats', '', 'TrendCharts', 5, TRUE, 'stats', 1),
+(0, '系统管理', '/system', '', 'Setting', 6, TRUE, 'system', 1),
 
 (2, '学生列表', '/user/list', 'user/UserListView', 'UserFilled', 1, TRUE, 'user:list', 1),
 
-(3, '用户管理', '/system/user', 'system/AdminUserListView', 'User', 1, TRUE, 'system:user', 1),
-(3, '角色管理', '/system/role', 'system/RoleListView', 'User', 2, TRUE, 'system:role', 1),
-(3, '菜单管理', '/system/menu', 'system/MenuListView', 'Menu', 3, TRUE, 'system:menu', 1),
-(3, '操作日志', '/system/log', 'system/LogListView', 'Document', 4, TRUE, 'system:log', 1),
+(3, '任务配置', '/task/config', 'task/TaskConfigView', 'Document', 1, TRUE, 'task:config', 1),
 
 (4, '单词库', '/content/vocab', 'content/VocabListView', 'Notebook', 1, TRUE, 'content:vocab', 1),
 (4, '听力题库', '/content/listening', 'content/ListeningListView', 'Headset', 2, TRUE, 'content:listening', 1),
@@ -126,7 +124,12 @@ INSERT INTO sys_menu (parent_id, name, path, component, icon, sort_order, visibl
 (4, '语法题库', '/content/grammar', 'content/GrammarListView', 'Edit', 4, TRUE, 'content:grammar', 1),
 
 (5, '错题统计', '/stats/mistake', 'stats/MistakeStatsView', 'WarningFilled', 1, TRUE, 'stats:mistake', 1),
-(5, '学习统计', '/stats/data', 'stats/DataStatsView', 'TrendCharts', 2, TRUE, 'stats:data', 1)
+(5, '学习统计', '/stats/data', 'stats/DataStatsView', 'TrendCharts', 2, TRUE, 'stats:data', 1),
+
+(6, '用户管理', '/system/user', 'system/AdminUserListView', 'User', 1, TRUE, 'system:user', 1),
+(6, '角色管理', '/system/role', 'system/RoleListView', 'User', 2, TRUE, 'system:role', 1),
+(6, '菜单管理', '/system/menu', 'system/MenuListView', 'Menu', 3, TRUE, 'system:menu', 1),
+(6, '操作日志', '/system/log', 'system/LogListView', 'Document', 4, TRUE, 'system:log', 1)
 ON CONFLICT DO NOTHING;
 
 -- 超级管理员关联所有菜单 (假设菜单id从1开始)

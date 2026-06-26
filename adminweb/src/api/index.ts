@@ -36,3 +36,8 @@ export const getGrammarList = (params: any) => request.get('/admin/grammar/list'
 export const saveGrammar = (data: any) => request.post('/admin/grammar', data)
 export const uploadAudio = (file: File) => { const fd = new FormData(); fd.append('file', file); return request.post('/admin/upload/audio', fd, { headers: { 'Content-Type': 'multipart/form-data' } }) }
 export const uploadImage = (file: File) => { const fd = new FormData(); fd.append('file', file); return request.post('/admin/upload/image', fd, { headers: { 'Content-Type': 'multipart/form-data' } }) }
+
+// 学习任务 API
+export const getTaskList = (params: any) => request.get('/admin/tasks/list', { params })
+export const saveTask = (data: any) => request.post('/admin/tasks', data)
+export const deleteTask = (id: number) => request.delete(`/admin/tasks/${id}`)
